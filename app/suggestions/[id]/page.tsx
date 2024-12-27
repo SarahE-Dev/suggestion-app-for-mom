@@ -50,9 +50,7 @@ async function getSuggestionAndDetails(id: string): Promise<SuggestionWithDetail
 
 // Page component props type
 interface PageProps {
-  params: {
-    id: string
-  }
+  params: Promise<{ id: string; }>; // Corrected: params is a Promise
 }
 
 export default async function SuggestionPage({ params }: PageProps) {

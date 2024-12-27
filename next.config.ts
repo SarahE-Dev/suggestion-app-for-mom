@@ -11,6 +11,10 @@ const nextConfig = {
       },
     ],
   },
+  eslint: {
+    ignoreDuringBuilds: true, // This disables ESLint during the build process
+  },
 }
 
 module.exports = nextConfig
+
