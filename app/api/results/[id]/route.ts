@@ -1,16 +1,23 @@
-// app/api/results/[id]/route.ts
+// app/api/suggestions/[id]/route.ts
 import { prisma } from '@/lib/prisma'
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
+import { type NextRequest } from 'next/server'
+
+type RouteContextProps = {
+  params: {
+    id: string
+  }
+}
 
 export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  _request: NextRequest,
+  context: RouteContextProps
 ) {
   try {
     // First find the suggestion by tmdbId
     const suggestion = await prisma.suggestion.findFirst({
       where: {
-        tmdbId: parseInt(params.id)
+        tmdbId: parseInt(context.params.id)
       }
     })
 
@@ -30,7 +37,7 @@ export async function DELETE(
 
     return NextResponse.json({ 
       message: 'Suggestion deleted',
-      deletedId: parseInt(params.id)
+      deletedId: parseInt(context.params.id)
     })
   } catch (error) {
     console.error('Delete error:', error)
