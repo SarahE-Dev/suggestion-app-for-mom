@@ -3,11 +3,15 @@ import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 
 export const DELETE = async ( request: Request,
-    { params }: { params: { id: string } }) => {
+    context: {
+        params: {
+          id: string;
+        };
+      } ) => {
   try {
     await prisma.suggestion.delete({
       where: {
-        id: parseInt(params.id)
+        id: parseInt(context.params.id)
       }
     })
     return NextResponse.json({ message: 'Suggestion deleted' })
