@@ -1,9 +1,9 @@
-// app/api/suggestions/[id]/route.ts
+// app/api/results/[id]/route.ts
 import { prisma } from '@/lib/prisma'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 
 export async function DELETE(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
