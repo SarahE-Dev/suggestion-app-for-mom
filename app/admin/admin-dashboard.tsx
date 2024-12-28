@@ -1,19 +1,49 @@
 'use client'
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { searchTMDb, getDetails } from "@/lib/tmdb"
+import { useToast } from "@/hooks/use-toast"
+import { ResultCard } from "@/components/result-card"
+
+interface SearchResult {
+  id: number
+  title?: string
+  name?: string
+  overview: string
+  poster_path: string
+  release_date?: string
+  first_air_date?: string
+}
 
 export function AdminDashboard() {
   const [searchQuery, setSearchQuery] = useState("")
   const [searchType, setSearchType] = useState("movie")
-  const [searchResults, setSearchResults] = useState([])
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [existingSuggestions, setExistingSuggestions] = useState<number[]>([])
+  const { toast } = useToast()
+
+  // Fetch existing suggestions when component mounts
+  const fetchExistingSuggestions = async () => {
+    try {
+      const response = await fetch('/api/suggestions')
+      const data = await response.json()
+      setExistingSuggestions(data.map((suggestion: any) => suggestion.tmdbId))
+    } catch (error) {
+      console.error('Failed to fetch existing suggestions:', error)
+    }
+  }
+
+    // Use useEffect to fetch existing suggestions when component mounts
+    useEffect(() => {
+      fetchExistingSuggestions()
+    }, [])
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -25,42 +55,20 @@ export function AdminDashboard() {
       if (results.results.length === 0) {
         setError("No results found. Try a different search term.")
       }
+      // Fetch existing suggestions to check for duplicates
+      await fetchExistingSuggestions()
     } catch (error) {
       console.error("Search failed:", error)
       setError("Search failed. Please try again.")
     } finally {
       setIsLoading(false)
+      setSearchQuery("")
     }
   }
 
-  const handleAddSuggestion = async (result: any) => {
-    try {
-      const details = await getDetails(result.id, searchType as 'movie' | 'tv')
-      const response = await fetch("/api/suggestions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tmdbId: details.id,
-          title: details.title || details.name,
-          type: searchType,
-          overview: details.overview,
-          posterPath: details.poster_path,
-          releaseDate: details.release_date || details.first_air_date,
-        }),
-      })
-      if (response.ok) {
-        alert("Suggestion added successfully to Mom's picks!")
-      } else {
-        throw new Error("Failed to add suggestion")
-      }
-    } catch (error) {
-      console.error("Failed to add suggestion:", error)
-      alert("Failed to add suggestion. Please try again.")
-    }
-  }
-
+  
   return (
-    <div className="container mx-auto py-8">
+    <div className="container mx-auto py-8 max-w-6xl">
       <h1 className="text-3xl font-bold mb-6">Add to Mom's Movie and Show Picks</h1>
       <Card>
         <CardHeader>
@@ -105,24 +113,27 @@ export function AdminDashboard() {
       )}
 
       {searchResults.length > 0 && (
-        <Card className="mt-8">
-          <CardHeader>
-            <CardTitle>Search Results</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-4">
-              {searchResults.map((result: any) => (
-                <li key={result.id} className="flex justify-between items-center">
-                  <span>{result.title || result.name}</span>
-                  <Button onClick={() => handleAddSuggestion(result)}>Add to Mom's Picks</Button>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
+        <div className="mt-8 mx-auto">
+          <h2 className="text-2xl font-bold mb-4">Search Results</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            {searchResults.map((result) => {
+              return (
+                <ResultCard
+                key={result.id}
+                id={result.id}
+                title={result.title || result.name || ''}
+                type={searchType as 'movie' | 'tv'}
+                posterPath={result.poster_path}
+                releaseDate={result.release_date || result.first_air_date || null}
+                overview={result.overview}
+                isInPicks={existingSuggestions.includes(result.id)}
+              />
+                  
+              )
+            })}
+          </div>
+        </div>
       )}
     </div>
   )
 }
-
-

@@ -3,33 +3,10 @@ import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { getDetails } from '@/lib/tmdb'
 import { Suggestion } from '@prisma/client'
+import SeasonList from '@/components/season-list'
+import { Badge } from '@/components/ui/badge'
+import { TMDbMovie } from '@/types'
 
-
-// Define TMDB response types
-interface TMDbMovie {
-  release_date?: string
-  runtime?: number
-  genres?: Array<{
-    id: number
-    name: string
-  }>
-  credits?: {
-    cast: Array<{
-      id: number
-      name: string
-      character: string
-      profile_path: string | null
-    }>
-  }
-  videos?: {
-    results: Array<{
-      id: string
-      key: string
-      name: string
-      site: string
-    }>
-  }
-}
 
 // Define the return type for getSuggestionAndDetails
 interface SuggestionWithDetails {
@@ -50,7 +27,7 @@ async function getSuggestionAndDetails(id: string): Promise<SuggestionWithDetail
 
 // Page component props type
 interface PageProps {
-  params: Promise<{ id: string; }>; // Corrected: params is a Promise
+  params: Promise<{ id: string; }>; 
 }
 
 export default async function SuggestionPage({ params }: PageProps) {
@@ -60,116 +37,155 @@ export default async function SuggestionPage({ params }: PageProps) {
   if (!data) notFound()
   
   const { suggestion, tmdbDetails } = data
+  
+  const formatRuntime = (minutes: number) => {
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+    return `${hours}h ${remainingMinutes}m`;
+  };
 
   return (
-    <div className="container mx-auto py-8">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+    <div className="container mx-auto py-6 px-4 max-w-6xl">
+      {/* Hero Section */}
+      <div className="flex flex-col md:flex-row gap-6 mb-8">
         {/* Poster */}
-        <div className="md:col-span-1">
+        <div className="flex-shrink-0">
           {suggestion.posterPath && (
-            <div className="relative aspect-[2/3] rounded-lg overflow-hidden">
+            <div className="relative w-[180px] aspect-[2/3] rounded-lg overflow-hidden shadow-lg mx-auto">
               <Image
-                src={`https://image.tmdb.org/t/p/original${suggestion.posterPath}`}
+                src={`https://image.tmdb.org/t/p/w500${suggestion.posterPath}`}
                 alt={suggestion.title}
                 fill
                 className="object-cover"
                 priority
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                sizes="(max-width: 768px) 180px, 180px"
               />
             </div>
           )}
         </div>
 
         {/* Details */}
-        <div className="md:col-span-2">
-          <h1 className="text-4xl font-bold mb-2">{suggestion.title}</h1>
-          <div className="flex items-center gap-2 text-gray-600 mb-4">
-            <span>{suggestion.type === 'movie' ? 'Movie' : 'TV Show'}</span>
-            {tmdbDetails.release_date && (
-              <>
-                <span>•</span>
-                <span>{new Date(tmdbDetails.release_date).getFullYear()}</span>
-              </>
-            )}
-            {tmdbDetails.runtime && (
-              <>
-                <span>•</span>
-                <span>{tmdbDetails.runtime} min</span>
-              </>
-            )}
-          </div>
+        <div className="flex-grow space-y-4">
+          <div>
+            <h1 className="text-3xl font-bold mb-3">{suggestion.title}</h1>
+            
+            {/* Meta Information */}
+            <div className="flex flex-wrap items-center gap-2 text-sm text-gray-400 mb-4">
+              {suggestion.type === 'movie' ? (
+                <Badge variant="secondary">Movie</Badge>
+              ) : (
+                <Badge variant="secondary">TV Show</Badge>
+              )}
+              
+              {tmdbDetails.release_date && (
+                <div className="flex items-center gap-2">
+                  <span>•</span>
+                  <span>{new Date(tmdbDetails.release_date).getFullYear()}</span>
+                </div>
+              )}
+              
+              {tmdbDetails.runtime && (
+                <div className="flex items-center gap-2">
+                  <span>•</span>
+                  <span>{formatRuntime(tmdbDetails.runtime)}</span>
+                </div>
+              )}
 
-          <div className="prose max-w-none">
-            <h2 className="text-2xl font-semibold mb-2">Overview</h2>
-            <p className="text-gray-700 mb-6">{suggestion.overview}</p>
+              {tmdbDetails.vote_average && (
+                <div className="flex items-center gap-2">
+                  <span>•</span>
+                  <span>★ {tmdbDetails.vote_average.toFixed(1)}</span>
+                </div>
+              )}
+            </div>
 
-            {tmdbDetails.genres && (
-              <div className="mb-6">
-                <h2 className="text-2xl font-semibold mb-2">Genres</h2>
-                <div className="flex flex-wrap gap-2">
+            {/* Overview */}
+            <p className="text-gray-400 text-sm leading-relaxed mb-4">{suggestion.overview}</p>
+
+            {/* Genres */}
+            {tmdbDetails.genres && tmdbDetails.genres.length > 0 && (
+              <div className="space-y-2">
+                <h2 className="text-sm font-semibold">Genres</h2>
+                <div className="flex flex-wrap gap-1.5">
                   {tmdbDetails.genres.map((genre) => (
-                    <span
-                      key={genre.id}
-                      className="px-3 py-1 bg-gray-100 rounded-full text-sm"
-                    >
+                    <Badge variant="outline" key={genre.id} className="text-xs">
                       {genre.name}
-                    </span>
+                    </Badge>
                   ))}
-                </div>
-              </div>
-            )}
-
-            {tmdbDetails.credits?.cast && (
-              <div className="mb-6">
-                <h2 className="text-2xl font-semibold mb-2">Cast</h2>
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                  {tmdbDetails.credits.cast.slice(0, 6).map((person) => (
-                    <div key={person.id} className="text-center">
-                      {person.profile_path ? (
-                        <div className="relative aspect-[2/3] mb-2">
-                          <Image
-                            src={`https://image.tmdb.org/t/p/w200${person.profile_path}`}
-                            alt={person.name}
-                            fill
-                            className="object-cover rounded"
-                            sizes='(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw'
-                          />
-                        </div>
-                      ) : (
-                        <div className="aspect-[2/3] bg-gray-200 rounded mb-2" />
-                      )}
-                      <p className="font-medium text-sm">{person.name}</p>
-                      <p className="text-gray-600 text-sm">{person.character}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {tmdbDetails.videos?.results && (
-              <div className="mb-6">
-                <h2 className="text-2xl font-semibold mb-2">Videos</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {tmdbDetails.videos.results
-                    .filter((video) => video.site === 'YouTube')
-                    .slice(0, 2)
-                    .map((video) => (
-                      <div key={video.id} className="aspect-video">
-                        <iframe
-                          src={`https://www.youtube.com/embed/${video.key}`}
-                          title={video.name}
-                          className="w-full h-full rounded"
-                          allowFullScreen
-
-                        />
-                      </div>
-                    ))}
                 </div>
               </div>
             )}
           </div>
         </div>
       </div>
+
+      {/* Content Sections */}
+      <div className="space-y-8">
+        {/* Videos Section */}
+        {tmdbDetails.videos?.results && tmdbDetails.videos.results.length > 0 && (
+          <section>
+            <h2 className="text-xl font-semibold mb-4">Videos</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {tmdbDetails.videos.results
+                .filter((video) => video.site === 'YouTube')
+                .slice(0, 2)
+                .map((video) => (
+                  <div key={video.id} className="aspect-video rounded-lg overflow-hidden shadow-md">
+                    <iframe
+                      src={`https://www.youtube.com/embed/${video.key}`}
+                      title={video.name}
+                      className="w-full h-full"
+                      allowFullScreen
+                    />
+                  </div>
+                ))}
+            </div>
+          </section>
+        )}
+
+        {/* Cast Section */}
+        {tmdbDetails.credits?.cast && tmdbDetails.credits.cast.length > 0 && (
+          <section>
+            <h2 className="text-xl font-semibold mb-4">Cast</h2>
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
+              {tmdbDetails.credits.cast.slice(0, 6).map((person) => (
+                <div key={person.id} className="group">
+                  <div className="relative aspect-[2/3] rounded-md overflow-hidden mb-1.5">
+                    {person.profile_path ? (
+                      <Image
+                        src={`https://image.tmdb.org/t/p/w200${person.profile_path}`}
+                        alt={person.name}
+                        fill
+                        className="object-cover transition-transform group-hover:scale-105"
+                        sizes="(max-width: 640px) 33vw, (max-width: 768px) 25vw, 16vw"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gray-200 dark:bg-gray-800 flex items-center justify-center">
+                        <span className="text-gray-400 text-xs">No Image</span>
+                      </div>
+                    )}
+                  </div>
+                  <h3 className="font-medium text-xs truncate">{person.name}</h3>
+                  <p className="text-gray-500 text-xs truncate">{person.character}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Seasons Section */}
+        {tmdbDetails.seasons && tmdbDetails.seasons.length > 0 && (
+          <section>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold">Seasons</h2>
+              <Badge variant="secondary" className="text-xs">
+                {tmdbDetails.seasons.length} {tmdbDetails.seasons.length === 1 ? 'Season' : 'Seasons'}
+              </Badge>
+            </div>
+            <SeasonList seasons={tmdbDetails.seasons} />
+          </section>
+        )}
+      </div>
     </div>
-  )
+  );
 }
