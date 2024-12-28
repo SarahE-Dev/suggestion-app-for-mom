@@ -1,10 +1,16 @@
-// app/api/suggestions/[id]/route.ts
+// app/api/results/[id]/route.ts
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 
+interface RouteSegment {
+  params: {
+    id: string
+  }
+}
+
 export async function DELETE(
-  req: Request,
-  { params }: { params: { id: string } }
+  _request: Request,
+  { params }: RouteSegment
 ) {
   try {
     // Find the suggestion by tmdbId
