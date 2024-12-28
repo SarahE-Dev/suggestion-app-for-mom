@@ -30,7 +30,7 @@ const Navbar: React.FC = () => {
           >
             <div className="relative group">
               {/* Gradient background for icon */}
-              <Film className="h-6 w-6" />+
+              <Film className="h-6 w-6" />
             </div>
             {/* Gradient text */}
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-500 via-pink-500 to-yellow-500">
