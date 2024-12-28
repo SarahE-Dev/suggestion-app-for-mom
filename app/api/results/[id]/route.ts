@@ -3,12 +3,12 @@ import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 
 export async function DELETE(
-  request: Request,
+  req: Request,
   { params }: { params: { id: string } }
 ) {
   try {
-    // First find the suggestion by tmdbId
-    const suggestion = await prisma.suggestion.findFirstOrThrow({
+    // Find the suggestion by tmdbId
+    const suggestion = await prisma.suggestion.findFirst({
       where: {
         tmdbId: parseInt(params.id)
       }
@@ -21,7 +21,7 @@ export async function DELETE(
       )
     }
 
-    // Then delete using the Prisma id
+    // Delete using the Prisma id
     await prisma.suggestion.delete({
       where: {
         id: suggestion.id
@@ -33,6 +33,7 @@ export async function DELETE(
       deletedId: parseInt(params.id)
     })
   } catch (error) {
+    console.error('Delete error:', error)
     return NextResponse.json(
       { error: 'Error deleting suggestion' }, 
       { status: 500 }
