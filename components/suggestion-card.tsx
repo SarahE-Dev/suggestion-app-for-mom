@@ -73,6 +73,7 @@ export function SuggestionCard({
       })
 
       router.refresh()
+      router.push('/')
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred'
       setError(errorMessage)
