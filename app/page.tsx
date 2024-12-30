@@ -1,4 +1,3 @@
-// app/page.tsx
 import { SuggestionCard } from '@/components/suggestion-card'
 import { Suggestion } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
