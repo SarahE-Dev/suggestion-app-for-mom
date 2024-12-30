@@ -47,7 +47,6 @@ export function ResultCard({
     try {
       setIsLoading(true)
       if (isInPicksState) {
-        // Remove from picks
         const response = await fetch(`/api/results/${id}`, {
           method: 'DELETE',
         })
@@ -61,7 +60,6 @@ export function ResultCard({
           description: "Removed from Mom's picks!",
         })
       } else {
-        // Add to picks
         const response = await fetch("/api/suggestions", {
           method: "POST",
           headers: { "Content-Type": "application/json" },

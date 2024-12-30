@@ -15,12 +15,12 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'ID must be a number' }, { status: 400 });
     }
 
-    await prisma.suggestion.delete({
+    const deleted = await prisma.suggestion.delete({
       where: {
         id: numericId,
       },
     });
-
+    console.log(deleted);
     return NextResponse.json({ message: 'Suggestion deleted' });
   } catch (error) {
     console.error('Error deleting suggestion:', error);
