@@ -3,10 +3,10 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
-    const id = parseInt(params.id, 10);
+    const id = parseInt(context.params.id, 10);
 
     await prisma.suggestion.delete({
       where: {
