@@ -34,10 +34,9 @@ export function SuggestionCard({
   overview
 }: SuggestionCardProps) {
   const router = useRouter()
-  console.log(id);
   const [isLoading, setIsLoading] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
-  
+
   const handleMarkAsWatched = async (e: React.MouseEvent) => {
     e.preventDefault() 
     e.stopPropagation() 
@@ -47,7 +46,6 @@ export function SuggestionCard({
       const response = await fetch(`/api/suggestions/${id}`, {
         method: 'DELETE',
       })
-      
       if (!response.ok) {
         throw new Error('Failed to mark as watched')
       }
@@ -60,10 +58,31 @@ export function SuggestionCard({
     }
   }
 
+  const WatchButton = () => (
+    <Button
+      variant="secondary"
+      size="icon"
+      className="h-8 w-8 bg-background/80 backdrop-blur-sm hover:bg-background/90 hover:text-primary"
+      onClick={handleMarkAsWatched}
+      disabled={isLoading}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {isLoading ? (
+        <Loader2 className="h-4 w-4 animate-spin" />
+      ) : (
+        isHovered ? <Check className="h-4 w-4" /> : <Eye className="h-4 w-4" />
+      )}
+      <span className="sr-only">
+        {isLoading ? 'Marking as watched...' : 'Mark as watched'}
+      </span>
+    </Button>
+  )
+
   return (
     <TooltipProvider>
       <div className="group relative">
-        <Tooltip delayDuration={300}>
+        <Tooltip>
           <TooltipTrigger asChild>
             <Link 
               href={`/suggestions/${id}`}
@@ -73,24 +92,7 @@ export function SuggestionCard({
                 <div className="absolute top-2 right-2 z-10">
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button
-                        variant="secondary"
-                        size="icon"
-                        className="h-8 w-8 bg-background/80 backdrop-blur-sm hover:bg-background/90 hover:text-primary"
-                        onClick={handleMarkAsWatched}
-                        disabled={isLoading}
-                        onMouseEnter={() => setIsHovered(true)}
-                        onMouseLeave={() => setIsHovered(false)}
-                      >
-                        {isLoading ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          isHovered ? <Check className="h-4 w-4" /> : <Eye className="h-4 w-4" />
-                        )}
-                        <span className="sr-only">
-                          {isLoading ? 'Marking as watched...' : 'Mark as watched'}
-                        </span>
-                      </Button>
+                      <WatchButton />
                     </TooltipTrigger>
                     <TooltipContent 
                       side="top" 
@@ -130,7 +132,7 @@ export function SuggestionCard({
             </Link>
           </TooltipTrigger>
           <TooltipContent 
-            side='right'
+            side="right"
             className="max-w-[300px] p-4"
             sideOffset={-20}
           >
