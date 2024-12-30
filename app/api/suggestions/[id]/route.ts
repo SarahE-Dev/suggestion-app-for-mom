@@ -1,13 +1,16 @@
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 
-export const DELETE = async (request: Request, context: { params: { id: string } }) => {
+export const DELETE = async (
+  request: Request,
+  { params }: { params: { id: string } } 
+) => {
   try {
-    const id = parseInt(context.params.id, 10); // Specify radix (base 10) for parsing
+    const id = parseInt(params.id, 10); 
 
     await prisma.suggestion.delete({
       where: {
-        id, // Use id directly without conversion
+        id, 
       },
     });
 
