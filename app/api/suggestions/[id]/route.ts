@@ -1,33 +1,30 @@
-import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { NextRequest, NextResponse } from 'next/server'
 
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(request: NextRequest) {
   try {
-    const id = parseInt(params.id, 10)
-
-    if (isNaN(id)) {
-      return NextResponse.json({ error: 'Invalid ID' }, { status: 400 })
+    const id = request.nextUrl.pathname.split('/').pop();
+    
+    if (!id) {
+      return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
     }
 
-    const suggestion = await prisma.suggestion.findUnique({
-      where: { id }
-    })
+    const numericId = parseInt(id, 10);
 
-    if (!suggestion) {
-      return NextResponse.json({ error: 'Suggestion not found' }, { status: 404 })
+    if (isNaN(numericId)) {
+      return NextResponse.json({ error: 'ID must be a number' }, { status: 400 });
     }
 
     await prisma.suggestion.delete({
-      where: { id }
-    })
+      where: {
+        id: numericId,
+      },
+    });
 
-    return NextResponse.json({ message: 'Suggestion deleted successfully' })
+    return NextResponse.json({ message: 'Suggestion deleted' });
   } catch (error) {
-    console.error('Error deleting suggestion:', error)
-    return NextResponse.json({ error: 'Error deleting suggestion' }, { status: 500 })
+    console.error('Error deleting suggestion:', error);
+    return NextResponse.json({ error: 'Error deleting suggestion' }, { status: 500 });
   }
 }
 
