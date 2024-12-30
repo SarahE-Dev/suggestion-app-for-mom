@@ -1,6 +1,17 @@
 import { SuggestionCard } from '@/components/suggestion-card'
-import { Suggestion } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
+
+type SerializedSuggestion = {
+  id: number
+  tmdbId: number
+  title: string
+  type: 'movie' | 'tv'
+  overview: string
+  posterPath: string | null
+  releaseDate: string | null
+  createdAt: string
+  updatedAt: string
+}
 
 export default async function Home() {
   const suggestions = await prisma.suggestion.findMany({
@@ -11,6 +22,7 @@ export default async function Home() {
     ...suggestion,
     createdAt: suggestion.createdAt.toISOString(),
     updatedAt: suggestion.updatedAt.toISOString(),
+    type: suggestion.type as 'movie' | 'tv' 
   }))
   
   return (
@@ -25,7 +37,7 @@ export default async function Home() {
             key={suggestion.id}
             id={suggestion.id}
             title={suggestion.title}
-            type={suggestion.type as 'movie' | 'tv'}
+            type={suggestion.type}
             posterPath={suggestion.posterPath}
             releaseDate={suggestion.releaseDate}
             overview={suggestion.overview}
