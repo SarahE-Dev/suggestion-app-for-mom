@@ -40,7 +40,6 @@ export function AdminDashboard() {
     }
   }
 
-    // Use useEffect to fetch existing suggestions when component mounts
     useEffect(() => {
       fetchExistingSuggestions()
     }, [])

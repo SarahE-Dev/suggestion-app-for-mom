@@ -17,6 +17,7 @@ interface SuggestionCardProps {
   posterPath: string | null;
   releaseDate: string | null;
   overview: string;
+  onSuggestionDelete: (suggestionId: number) => void;
 }
 
 const formatDate = (date: string): string => {
@@ -39,6 +40,7 @@ export function SuggestionCard({
   posterPath,
   releaseDate,
   overview,
+  onSuggestionDelete
 }: SuggestionCardProps) {
   const router = useRouter();
   const { toast } = useToast();
@@ -71,8 +73,7 @@ export function SuggestionCard({
         description: "Successfully marked as watched.",
         duration: 3000,
       });
-
-      router.refresh();
+      onSuggestionDelete(id)
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
       setError(errorMessage);
