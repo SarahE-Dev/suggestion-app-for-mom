@@ -9,6 +9,18 @@ import { Button } from "@/components/ui/button";
 import { Eye, Check, Loader2, AlertCircle } from "lucide-react";
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface SuggestionCardProps {
   id: number;
@@ -47,10 +59,20 @@ export function SuggestionCard({
   const [isLoading, setIsLoading] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [initials, setInitials] = useState('');
+  const expectedInitials = 'SATE';
 
-  const handleMarkAsWatched = useCallback(async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleMarkAsWatched = useCallback(async () => {
+    if (initials.toUpperCase() !== expectedInitials) {
+      toast({
+        variant: "destructive",
+        title: "Invalid Initials",
+        description: "Please enter the correct initials",
+        duration: 3000,
+      });
+      return;
+    }
 
     try {
       setIsLoading(true);
@@ -73,7 +95,9 @@ export function SuggestionCard({
         description: "Successfully marked as watched.",
         duration: 3000,
       });
-      onSuggestionDelete(id)
+      setShowConfirmDialog(false);
+      setInitials('');
+      onSuggestionDelete(id);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
       setError(errorMessage);
@@ -87,7 +111,7 @@ export function SuggestionCard({
     } finally {
       setIsLoading(false);
     }
-  }, [id, router, toast]); 
+  }, [id, initials, toast, onSuggestionDelete]);
 
   const WatchButton = useCallback(() => (
     <Button
@@ -96,7 +120,11 @@ export function SuggestionCard({
       className={`h-8 w-8 bg-background/80 backdrop-blur-sm transition-colors
         ${error ? 'hover:bg-red-100' : 'hover:bg-background/90 hover:text-primary'}
       `}
-      onClick={handleMarkAsWatched}
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setShowConfirmDialog(true);
+      }}
       disabled={isLoading}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -116,18 +144,57 @@ export function SuggestionCard({
             : 'Mark as watched'}
       </span>
     </Button>
-  ), [isLoading, isHovered, error, handleMarkAsWatched]);
+  ), [isLoading, isHovered, error]);
 
   return (
     <TooltipProvider>
       <div className="group relative">
+        <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Mark as Watched?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to mark "{title}" as watched and delete this suggestion?
+                Please enter your initials to confirm.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <div className="py-4">
+              <Label htmlFor="initials">Enter Initials</Label>
+              <Input
+                id="initials"
+                value={initials}
+                onChange={(e) => setInitials(e.target.value)}
+                placeholder="Enter initials"
+                className="mt-2"
+              />
+            </div>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => {
+                setInitials('');
+                setShowConfirmDialog(false);
+              }}>
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleMarkAsWatched}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                ) : null}
+                Confirm
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
         <Tooltip>
           <TooltipTrigger asChild>
             <Link
               href={`/suggestions/${id}`}
-              className="block transition-transform hover:scale-[1.02] duration-200 focus:outline-none focus:ring-2 focus:ring-primary"
+              className="block transition-transform hover:scale-[1.02] duration-200 focus:outline-none focus:ring-2 focus:ring-primary rounded-lg"
             >
-              <Card className="h-full hover:shadow-lg transition-shadow">
+              <Card className="h-full rounded-lg hover:shadow-lg transition-shadow">
                 <div className="absolute top-2 right-2 z-10">
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -160,7 +227,7 @@ export function SuggestionCard({
                         sizes="(max-width: 640px) 45vw, (max-width: 768px) 30vw, (max-width: 1024px) 20vw, 15vw"
                         priority
                         onError={(e) => {
-                          e.currentTarget.src = '/fallback-image.jpg'; 
+                          e.currentTarget.src = '/poster-placeholder.svg';
                         }}
                       />
                     </div>

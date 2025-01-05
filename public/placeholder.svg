@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 300">
+  <!-- Background -->
+  <rect width="200" height="300" fill="#1F2937"/>
+  
+  <!-- Film Icon -->
+  <g transform="translate(60,100)" fill="#4B5563">
+    <circle cx="40" cy="40" r="35"/>
+    <circle cx="40" cy="40" r="25" fill="#1F2937"/>
+    <!-- Film sprocket holes -->
+    <circle cx="40" cy="5" r="4" fill="#1F2937"/>
+    <circle cx="40" cy="75" r="4" fill="#1F2937"/>
+    <circle cx="5" cy="40" r="4" fill="#1F2937"/>
+    <circle cx="75" cy="40" r="4" fill="#1F2937"/>
+  </g>
+  
+  <!-- Text -->
+  <text x="100" y="200" fill="#6B7280" font-family="sans-serif" font-size="16" text-anchor="middle">No Poster</text>
+  <text x="100" y="220" fill="#4B5563" font-family="sans-serif" font-size="12" text-anchor="middle">Available</text>
+</svg>
