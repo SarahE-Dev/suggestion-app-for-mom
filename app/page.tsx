@@ -2,7 +2,7 @@ import { SuggestionCard } from '@/components/suggestion-card'
 import { prisma } from '@/lib/prisma'
 import { Suggestion } from '@prisma/client'
 
-// Define a more specific type for the serialized suggestion
+
 type SerializedSuggestion = Omit<Suggestion, 'createdAt' | 'updatedAt'> & {
   createdAt: string
   updatedAt: string
