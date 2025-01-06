@@ -17,30 +17,26 @@ export default function Login() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setError(null); // Clear any previous errors
-    setLoading(true); // Start loading state
-
-    console.log("Login attempt with:", email); // Debug log
+    setError(null);
+    setLoading(true);
 
     try {
       const result = await signIn("credentials", {
-        redirect: false, // Prevent automatic redirection
+        redirect: false,
         email: email.trim(),
         password,
       });
 
-      console.log("SignIn result:", result); // Debug log
-
       if (result?.error) {
         setError("Invalid email or password");
       } else if (result?.ok) {
-        router.push("/admin"); // Redirect on success
+        router.push("/admin");
       }
     } catch (err) {
       console.error("Login error:", err);
-      setError("An unexpected error occurred");
+      setError("An unexpected error occurred. Please try again.");
     } finally {
-      setLoading(false); // Stop loading state
+      setLoading(false);
     }
   };
 

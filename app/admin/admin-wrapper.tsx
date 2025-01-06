@@ -2,18 +2,11 @@
 
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
-import { Loader2 } from "lucide-react"
-import { useEffect } from "react"
+import { Loader2 } from 'lucide-react'
 
 export function AdminWrapper({ children }: { children: React.ReactNode }) {
   const { status } = useSession()
   const router = useRouter()
-
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/admin/login")
-    }
-  }, [status, router])
 
   if (status === "loading") {
     return (
@@ -24,8 +17,10 @@ export function AdminWrapper({ children }: { children: React.ReactNode }) {
   }
 
   if (status === "unauthenticated") {
+    router.push("/admin/login")
     return null
   }
 
   return <>{children}</>
 }
+
