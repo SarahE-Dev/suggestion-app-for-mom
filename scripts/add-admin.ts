@@ -3,9 +3,8 @@ const bcrypt = require('bcryptjs')
 
 const prisma = new PrismaClient()
 
-async function addAdmin() {
-  const email = "seatherly@gmail.com"
-  const password = "masonlee1105"
+async function addAdmin(email: string, password: string) {
+  
 
   try {
     // Check if user exists
@@ -49,4 +48,3 @@ async function addAdmin() {
   }
 }
 
-addAdmin()
